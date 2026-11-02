@@ -7,8 +7,8 @@ from __future__ import annotations
 
 import pytest
 
-from thymble.importer.ingredients import parse_line, parse_lines
-from thymble.importer.normalize import apply_dictionary, lookup_compound, name_key, singular
+from larder.importer.ingredients import parse_line, parse_lines
+from larder.importer.normalize import apply_dictionary, lookup_compound, name_key, singular
 
 
 def fields(line):

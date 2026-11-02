@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Thymble database backups: pg_dump -Fc, optional age encryption, optional off-site copy.
+# larder database backups: pg_dump -Fc, optional age encryption, optional off-site copy.
 #
-#   thymble-backup schedule        run `run` every day at BACKUP_AT (the service's default)
-#   thymble-backup run             take one backup now
-#   thymble-backup list            list local backups
-#   thymble-backup verify [FILE]   restore FILE (default: newest) into a scratch database,
+#   larder-backup schedule        run `run` every day at BACKUP_AT (the service's default)
+#   larder-backup run             take one backup now
+#   larder-backup list            list local backups
+#   larder-backup verify [FILE]   restore FILE (default: newest) into a scratch database,
 #                                  print row counts, drop it again. Production is untouched.
-#   thymble-backup restore ...     see thymble-restore (replaces the live database)
-#   thymble-backup health          container healthcheck: last success within 26 hours
+#   larder-backup restore ...     see larder-restore (replaces the live database)
+#   larder-backup health          container healthcheck: last success within 26 hours
 #
 # Connection: the standard libpq variables PGHOST, PGPORT, PGUSER, PGPASSWORD, PGDATABASE.
 # Configuration (all optional):
@@ -16,12 +16,13 @@
 #   BACKUP_KEEP_DAYS=14              local retention
 #   BACKUP_AGE_RECIPIENTS=           age public keys (space/comma separated); encrypts dumps
 #   BACKUP_REQUIRE_ENCRYPTION=false  refuse to write unencrypted dumps
-#   BACKUP_RCLONE_REMOTE=            rclone destination, e.g. "offsite:thymble-backups"
+#   BACKUP_RCLONE_REMOTE=            rclone destination, e.g. "offsite:larder-backups"
 #   BACKUP_OFFSITE_KEEP_DAYS=30      off-site retention (0 = keep everything)
 #   BACKUP_OFFSITE_ALLOW_UNENCRYPTED=false
 #   BACKUP_NOTIFY_URL=               POSTed JSON {"status","message","host","file"} on failure
 #   BACKUP_NOTIFY_ON_SUCCESS=false   ...and on success too
 #   BACKUP_VERIFY=false              restore every dump into a scratch database first
+#   APP_NAME=Heartwood               product name used in notification messages
 set -Eeuo pipefail
 umask 077
 
@@ -29,7 +30,7 @@ BACKUP_DIR="${BACKUP_DIR:-/backups}"
 BACKUP_AT="${BACKUP_AT:-03:30}"
 BACKUP_KEEP_DAYS="${BACKUP_KEEP_DAYS:-14}"
 BACKUP_OFFSITE_KEEP_DAYS="${BACKUP_OFFSITE_KEEP_DAYS:-30}"
-PGDATABASE="${PGDATABASE:-thymble}"
+PGDATABASE="${PGDATABASE:-larder}"
 export PGDATABASE
 LAST_SUCCESS="$BACKUP_DIR/.last-success"
 STARTED=/tmp/.backup-started
@@ -58,7 +59,7 @@ recipients() { # one age recipient per line
 }
 
 newest() {
-	find "$BACKUP_DIR" -maxdepth 1 -type f -name 'thymble-*.dump*' ! -name '*.sha256' \
+	find "$BACKUP_DIR" -maxdepth 1 -type f -name 'larder-*.dump*' ! -name '*.sha256' \
 		-printf '%T@ %p\n' | sort -rn | awk 'NR == 1 { sub(/^[^ ]+ /, ""); print }'
 }
 
@@ -66,7 +67,7 @@ do_run() {
 	mkdir -p "$BACKUP_DIR"
 	local stamp name partial final
 	stamp=$(date -u +%Y%m%dT%H%M%SZ)
-	name="thymble-${stamp}.dump"
+	name="larder-${stamp}.dump"
 	partial="$BACKUP_DIR/.partial-${name}"
 	rm -f "$BACKUP_DIR"/.partial-* # leftovers from an interrupted run
 
@@ -76,7 +77,7 @@ do_run() {
 	pg_restore --list "$partial" >/dev/null
 	if truthy "${BACKUP_VERIFY:-false}"; then
 		# Prove the plain dump restores before it is encrypted (no private key needed here).
-		thymble-restore --verify "$partial"
+		larder-restore --verify "$partial"
 	fi
 
 	if [ -n "$(recipients)" ]; then
@@ -108,18 +109,18 @@ do_run() {
 		rclone copy --no-traverse "$final" "$BACKUP_RCLONE_REMOTE"
 		rclone copy --no-traverse "$final.sha256" "$BACKUP_RCLONE_REMOTE"
 		if [ "$BACKUP_OFFSITE_KEEP_DAYS" -gt 0 ]; then
-			rclone delete --min-age "${BACKUP_OFFSITE_KEEP_DAYS}d" --include 'thymble-*.dump*' \
+			rclone delete --min-age "${BACKUP_OFFSITE_KEEP_DAYS}d" --include 'larder-*.dump*' \
 				"$BACKUP_RCLONE_REMOTE"
 		fi
 	fi
 
-	find "$BACKUP_DIR" -maxdepth 1 -type f -name 'thymble-*.dump*' -mtime +"$BACKUP_KEEP_DAYS" \
+	find "$BACKUP_DIR" -maxdepth 1 -type f -name 'larder-*.dump*' -mtime +"$BACKUP_KEEP_DAYS" \
 		-print -delete | sed 's/^/pruned /' >&2
 
 	touch "$LAST_SUCCESS"
 	log "backup complete"
 	if truthy "${BACKUP_NOTIFY_ON_SUCCESS:-false}"; then
-		notify ok "Thymble backup complete" "$(basename "$final")"
+		notify ok "${APP_NAME:-Heartwood} backup complete" "$(basename "$final")"
 	fi
 }
 
@@ -132,7 +133,7 @@ run_reporting() {
 	sleep 0.2 # let tee flush
 	if [ "$status" -ne 0 ]; then
 		log "backup FAILED (exit $status)"
-		notify failed "Thymble backup failed: $(tail -n 5 "$out")"
+		notify failed "${APP_NAME:-Heartwood} backup failed: $(tail -n 5 "$out")"
 	fi
 	rm -f "$out"
 	return "$status"
@@ -180,7 +181,7 @@ do_health() {
 }
 
 do_list() {
-	find "$BACKUP_DIR" -maxdepth 1 -type f -name 'thymble-*.dump*' ! -name '*.sha256' \
+	find "$BACKUP_DIR" -maxdepth 1 -type f -name 'larder-*.dump*' ! -name '*.sha256' \
 		-printf '%TY-%Tm-%Td %TH:%TM  %10s  %f\n' | sort
 }
 
@@ -198,9 +199,9 @@ verify)
 		log "no backups in $BACKUP_DIR"
 		exit 1
 	}
-	exec thymble-restore --verify "$file"
+	exec larder-restore --verify "$file"
 	;;
-restore) exec thymble-restore "$@" ;;
+restore) exec larder-restore "$@" ;;
 *)
 	sed -n '2,12p' "$0" >&2
 	exit 2

@@ -8,11 +8,11 @@ from pathlib import Path
 import httpx
 import pytest
 
+from larder.importer.extract import extract_from_html, extract_from_text, html_to_text
+from larder.importer.pipeline import ImportFailed, ImportInput, ImportPipeline
+from larder.llm import LLMClient, MemoryStore
 from tests.conftest import make_settings
 from tests.llm_fakes import FakeProvider
-from thymble.importer.extract import extract_from_html, extract_from_text, html_to_text
-from thymble.importer.pipeline import ImportFailed, ImportInput, ImportPipeline
-from thymble.llm import LLMClient, MemoryStore
 
 FIXTURES = Path(__file__).parent / "fixtures" / "import"
 
@@ -267,7 +267,7 @@ def test_photo_rejects_other_types():
 
 def transport_for(routes: dict[str, httpx.Response]) -> httpx.MockTransport:
     def handler(request: httpx.Request) -> httpx.Response:
-        assert request.headers["user-agent"].startswith("ThymbleBot/")
+        assert request.headers["user-agent"].startswith("LarderBot/")
         return routes.get(str(request.url), httpx.Response(404))
 
     return httpx.MockTransport(handler)

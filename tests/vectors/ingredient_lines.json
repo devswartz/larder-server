@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "Shared ingredient-line rule vectors (D-033). Synthetic lines written for Thymble; no third-party recipe text. Format: tests/vectors/README.md.",
+  "description": "Shared ingredient-line rule vectors (D-033). Synthetic lines written for Larder; no third-party recipe text. Format: tests/vectors/README.md.",
   "cases": [
     {
       "id": "Q01",

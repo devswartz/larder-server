@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from thymble.importer import rules
-from thymble.importer.fetch import blocked_reason, decode_html
+from larder.importer import rules
+from larder.importer.fetch import blocked_reason, decode_html
 
 
 @pytest.mark.parametrize(

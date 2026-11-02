@@ -29,7 +29,7 @@ def test_committed_openapi_is_current():
 
 def test_openapi_document_shape():
     document = json.loads(_exporter().render())
-    assert document["info"]["title"] == "Thymble Server"
+    assert document["info"]["title"] == "Heartwood Server"
     assert document["info"]["license"]["identifier"] == "AGPL-3.0-only"
     paths = document["paths"]
     for path in ("/healthz", "/v1/capabilities", "/v1/auth/refresh", "/v1/households/join"):
@@ -41,3 +41,11 @@ def test_openapi_document_shape():
 def test_render_is_deterministic():
     exporter = _exporter()
     assert exporter.render() == exporter.render()
+
+
+def test_openapi_title_follows_app_name():
+    from larder.config import Settings
+    from larder.main import create_app
+
+    app = create_app(Settings(_env_file=None, app_name="Pantry"))
+    assert app.openapi()["info"]["title"] == "Pantry Server"

@@ -16,9 +16,8 @@ import pytest
 import pytest_asyncio
 from sqlalchemy import select
 
-from tests.shopping.fake_ha import FakeHA
-from thymble.connectors.home_assistant.engine import EngineOptions, HASyncEngine
-from thymble.models import (
+from larder.connectors.home_assistant.engine import EngineOptions, HASyncEngine
+from larder.models import (
     ConnectorAccount,
     ConnectorItemLink,
     ItemStatus,
@@ -26,8 +25,9 @@ from thymble.models import (
     TripKind,
     Urgency,
 )
-from thymble.shopping import trips
-from thymble.shopping.service import ShoppingService
+from larder.shopping import trips
+from larder.shopping.service import ShoppingService
+from tests.shopping.fake_ha import FakeHA
 
 pytestmark = [pytest.mark.asyncio, pytest.mark.db]
 
@@ -83,7 +83,7 @@ class Env:
     def uid(self, entity, summary):
         return self.fake.find(entity, summary)[0].uid
 
-    def thymble(self) -> list[ShoppingItem]:
+    def larder(self) -> list[ShoppingItem]:
         with self.sessions() as s:
             return list(
                 s.scalars(
@@ -97,10 +97,10 @@ class Env:
     def by_name(self, name, stopgap=False) -> ShoppingItem:
         hits = [
             i
-            for i in self.thymble()
+            for i in self.larder()
             if i.display_text == name and (i.bridge_of is not None) == stopgap
         ]
-        assert len(hits) == 1, [(i.display_text, i.status) for i in self.thymble()]
+        assert len(hits) == 1, [(i.display_text, i.status) for i in self.larder()]
         return hits[0]
 
     def links(self, item_id):
@@ -176,7 +176,7 @@ async def test_app_add_mirrors_once_no_echo_import(make_env):
     await env.settle()
     assert env.items(MAIN) == ["milk"]
     assert [s for s, *_ in env.writes()] == ["add_item"]
-    assert len(env.thymble()) == 1  # our own add was not re-imported
+    assert len(env.larder()) == 1  # our own add was not re-imported
     [link] = env.links(env.by_name("milk").id)
     assert link.uid == env.uid(MAIN, "milk") and not link.awaiting_echo
     assert env.engine.stats["duplicate_events"] >= 1  # the double-fire was dropped
@@ -187,14 +187,14 @@ async def test_quantities_are_written_as_display_text(make_env):
     env.app(lambda svc: svc.add_item(env.setup.list.id, "chicken thighs", 2, "lbs"))
     await env.settle()
     assert env.items(MAIN) == ["2 lb chicken thighs"]
-    assert len(env.thymble()) == 1
+    assert len(env.larder()) == 1
 
 
 async def test_alexa_add_imported_once_despite_double_events(make_env):
     env = await make_env()
     env.fake.alexa_add(MAIN, "Eggs")
     await asyncio.sleep(0.03)
-    assert env.thymble() == []  # still in the Alexa->HA delay
+    assert env.larder() == []  # still in the Alexa->HA delay
     await env.settle()
     item = env.by_name("Eggs")
     assert item.status == ItemStatus.NEEDED
@@ -236,7 +236,7 @@ async def test_delete_flows_both_ways(make_env):
     assert env.items(MAIN) == ["jam"]
     env.fake.alexa_remove(MAIN, env.uid(MAIN, "jam"))
     await env.settle()
-    assert env.thymble() == []
+    assert env.larder() == []
     assert env.engine.stats["verifies"] >= 1  # removal was confirmed before acting
 
 
@@ -246,7 +246,7 @@ async def test_external_rename_is_last_writer_wins(make_env):
     await env.settle()
     env.fake.alexa_rename(MAIN, env.uid(MAIN, "milk"), "oat milk")
     await env.settle()
-    assert [i.display_text for i in env.thymble()] == ["oat milk"]
+    assert [i.display_text for i in env.larder()] == ["oat milk"]
 
 
 async def test_urgent_keyword_stripped_and_renamed_on_alexa(make_env):
@@ -265,7 +265,7 @@ async def test_voice_duplicates_merge_and_extra_copy_is_removed(make_env):
     env.fake.alexa_add(MAIN, "milk")
     await env.settle()
     item = env.by_name("milk")
-    assert len(env.thymble()) == 1 and env.engine.stats["merged"] == 1
+    assert len(env.larder()) == 1 and env.engine.stats["merged"] == 1
     assert env.items(MAIN) == ["milk"]  # the extra Alexa copy was removed
     [link] = env.links(item.id)
     env.fake.alexa_set_status(MAIN, link.uid, "completed")
@@ -279,7 +279,7 @@ async def test_voice_add_merges_with_existing_app_item(make_env):
     await env.settle()
     env.fake.alexa_add(MAIN, "Eggs")
     await env.settle()
-    assert len(env.thymble()) == 1 and len(env.links(env.by_name("eggs").id)) == 1
+    assert len(env.larder()) == 1 and len(env.links(env.by_name("eggs").id)) == 1
     assert env.items(MAIN) == ["eggs"]
 
 
@@ -298,7 +298,7 @@ async def test_voice_add_of_item_on_order_creates_a_new_needed_item(make_env):
     assert env.items(MAIN) == ["paper towels — on Walmart order"]
     env.fake.alexa_add(MAIN, "paper towels")
     await env.settle()
-    statuses = sorted(i.status.value for i in env.thymble())
+    statuses = sorted(i.status.value for i in env.larder())
     assert statuses == ["needed", "on_order"]
     assert env.items(MAIN) == ["paper towels", "paper towels — on Walmart order"]
 
@@ -312,7 +312,7 @@ async def test_costco_item_said_to_main_list_is_moved(make_env):
     assert env.items(MAIN) == [] and env.items(COSTCO) == ["paper towels"]
     item = env.by_name("paper towels")
     assert [lk.entity for lk in env.links(item.id)] == [COSTCO]
-    assert len(env.thymble()) == 1  # one Thymble item throughout
+    assert len(env.larder()) == 1  # one larder item throughout
 
 
 async def test_app_add_with_costco_home_goes_straight_to_costco(make_env):
@@ -342,7 +342,7 @@ async def test_voice_add_on_costco_list_learns_costco_home(make_env):
     env.fake.alexa_add(MAIN, "almonds")  # remembered: moves to Costco, merges
     await env.settle()
     assert env.items(COSTCO) == ["almonds"] and env.items(MAIN) == []
-    assert len(env.thymble()) == 1
+    assert len(env.larder()) == 1
 
 
 # --------------------------------------------------------------- stop-gaps
@@ -417,7 +417,7 @@ async def test_walmart_order_rename_confirm_and_missing(make_env):
     trip_id = env.app(order)
     await env.settle()
     assert env.items(MAIN) == ["bread", "eggs — on Walmart order", "milk — on Walmart order"]
-    assert len(env.thymble()) == 3  # renames were not mistaken for new items
+    assert len(env.larder()) == 3  # renames were not mistaken for new items
     env.app(lambda svc: trips.confirm_order(svc, svc.get_trip(trip_id), {eggs}))
     await env.settle()
     assert env.by_name("milk").status == ItemStatus.BOUGHT
@@ -501,7 +501,7 @@ async def test_completed_items_removed_after_grace_period(make_env):
     env.engine.request_sweep()
     await env.settle()
     assert env.items(MAIN) == ["eggs"]
-    assert env.by_name("milk").status == ItemStatus.BOUGHT  # Thymble keeps the history
+    assert env.by_name("milk").status == ItemStatus.BOUGHT  # larder keeps the history
     assert env.engine.stats["grace_removed"] == 1
 
 
@@ -521,7 +521,7 @@ async def test_first_connect_imports_and_prunes_old_history(make_env, sessions):
         }
     )
     assert env.items(MAIN) == ["Salsa", "bread", "coffee"]  # old Cheese pruned
-    names = {i.display_text: i for i in env.thymble()}
+    names = {i.display_text: i for i in env.larder()}
     assert sorted(names) == ["Salsa", "almonds", "bread", "coffee"]
     assert names["Salsa"].status == ItemStatus.BOUGHT
     assert names["coffee"].urgency == Urgency.URGENT
@@ -547,7 +547,7 @@ async def test_stale_replay_does_not_revert_state(make_env):
     assert env.by_name("eggs").status == ItemStatus.NEEDED
 
 
-async def test_thymble_write_not_reverted_by_preceding_alexa_snapshot(make_env):
+async def test_larder_write_not_reverted_by_preceding_alexa_snapshot(make_env):
     env = await make_env(fake_kw={"double_fire_delay": 0.15})
     env.app(lambda svc: svc.add_item(env.setup.list.id, "milk"))
     await env.settle()
@@ -578,7 +578,7 @@ async def test_reconnect_resyncs_both_directions(make_env):
     await env.settle()
     assert env.engine.stats["connects"] == 2
     assert env.items(MAIN) == ["bread", "butter", "honey"]
-    assert sorted(i.display_text for i in env.thymble()) == ["bread", "butter", "honey"]
+    assert sorted(i.display_text for i in env.larder()) == ["bread", "butter", "honey"]
 
 
 async def test_reconnect_with_nothing_changed_is_a_noop(make_env):
@@ -590,7 +590,7 @@ async def test_reconnect_with_nothing_changed_is_a_noop(make_env):
     await asyncio.sleep(0.1)
     await asyncio.wait_for(env.engine.connected.wait(), 2)
     await env.settle()
-    assert len(env.writes()) == writes and len(env.thymble()) == 1
+    assert len(env.writes()) == writes and len(env.larder()) == 1
 
 
 async def test_restart_reloads_links_from_the_database(make_env, sessions):
@@ -612,7 +612,7 @@ async def test_restart_reloads_links_from_the_database(make_env, sessions):
         await asyncio.wait_for(fresh.connected.wait(), 2)
         await env.settle()
         assert len(env.writes()) == writes  # nothing re-added, nothing re-imported
-        assert len(env.thymble()) == 2
+        assert len(env.larder()) == 2
     finally:
         await fresh.stop()
 

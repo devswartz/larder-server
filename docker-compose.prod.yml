@@ -8,7 +8,7 @@
 # What it changes from the base file:
 #  - Public traffic arrives through a Cloudflare Tunnel (`cloudflared`, outbound only), so
 #    nothing publishes a host port: no api or PowerSync port, no Postgres, no Redis.
-#  - Data lives in bind mounts under THYMBLE_DATA_DIR (default /opt/thymble): postgres/,
+#  - Data lives in bind mounts under LARDER_DATA_DIR (default /opt/larder): postgres/,
 #    redis/, backups/, rclone/.
 #  - A `backup` service takes a nightly pg_dump (encrypted with age and copied off-site
 #    when configured). See docs/self-hosting.md.
@@ -31,20 +31,20 @@ services:
     # Reachable only on the compose network (cloudflared -> http://api:8000).
     ports: !reset []
     environment:
-      THYMBLE_ENV: production
+      LARDER_ENV: production
       # uvicorn --proxy-headers: trust X-Forwarded-For/-Proto from the tunnel. Safe because
       # the api has no host port; only containers on this network can reach it.
       FORWARDED_ALLOW_IPS: "*"
-      # Rate limits count real clients, not the tunnel (see thymble.ratelimit).
+      # Rate limits count real clients, not the tunnel (see larder.ratelimit).
       CLIENT_IP_HEADER: ${CLIENT_IP_HEADER:-CF-Connecting-IP}
     logging: *logging
 
   worker:
     environment:
-      THYMBLE_ENV: production
+      LARDER_ENV: production
     healthcheck:
       # arq refreshes a health key in Redis while the worker runs.
-      test: ["CMD", "arq", "--check", "thymble.worker.WorkerSettings"]
+      test: ["CMD", "arq", "--check", "larder.worker.WorkerSettings"]
       interval: 60s
       timeout: 15s
       retries: 3
@@ -53,13 +53,13 @@ services:
 
   postgres:
     volumes:
-      - ${THYMBLE_DATA_DIR:-/opt/thymble}/postgres:/var/lib/postgresql/data
+      - ${LARDER_DATA_DIR:-/opt/larder}/postgres:/var/lib/postgresql/data
     shm_size: 256mb
     logging: *logging
 
   redis:
     volumes:
-      - ${THYMBLE_DATA_DIR:-/opt/thymble}/redis:/data
+      - ${LARDER_DATA_DIR:-/opt/larder}/redis:/data
     logging: *logging
 
   powersync:
@@ -78,7 +78,7 @@ services:
     logging: *logging
 
   cloudflared:
-    # Thymble's own tunnel connector (D-020). The tunnel and its public hostnames are
+    # larder's own tunnel connector (D-020). The tunnel and its public hostnames are
     # configured in the Cloudflare dashboard; this container only needs the token.
     image: cloudflare/cloudflared:2026.10.0
     command: ["tunnel", "--no-autoupdate", "run"]
@@ -107,13 +107,13 @@ services:
   backup:
     build:
       context: deploy/backup
-    image: thymble-backup:local
+    image: larder-backup:local
     command: ["schedule"]
     environment:
       PGHOST: postgres
-      PGUSER: ${POSTGRES_USER:-thymble}
+      PGUSER: ${POSTGRES_USER:-larder}
       PGPASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
-      PGDATABASE: ${POSTGRES_DB:-thymble}
+      PGDATABASE: ${POSTGRES_DB:-larder}
       TZ: ${TZ:-UTC}
       BACKUP_AT: ${BACKUP_AT:-03:30}
       BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
@@ -122,16 +122,17 @@ services:
       BACKUP_RCLONE_REMOTE: ${BACKUP_RCLONE_REMOTE:-}
       BACKUP_OFFSITE_KEEP_DAYS: ${BACKUP_OFFSITE_KEEP_DAYS:-30}
       BACKUP_NOTIFY_URL: ${BACKUP_NOTIFY_URL:-}
+      APP_NAME: ${APP_NAME:-Heartwood}
       BACKUP_NOTIFY_ON_SUCCESS: ${BACKUP_NOTIFY_ON_SUCCESS:-false}
       BACKUP_VERIFY: ${BACKUP_VERIFY:-false}
       RCLONE_CONFIG: /config/rclone/rclone.conf
     volumes:
-      - ${THYMBLE_DATA_DIR:-/opt/thymble}/backups:/backups
+      - ${LARDER_DATA_DIR:-/opt/larder}/backups:/backups
       # rclone.conf for the off-site remote (rclone may refresh tokens in it, so not :ro)
-      - ${THYMBLE_DATA_DIR:-/opt/thymble}/rclone:/config/rclone
+      - ${LARDER_DATA_DIR:-/opt/larder}/rclone:/config/rclone
     healthcheck:
       # Unhealthy when the last successful backup is more than 26 hours old.
-      test: ["CMD", "thymble-backup", "health"]
+      test: ["CMD", "larder-backup", "health"]
       interval: 10m
       timeout: 10s
       retries: 1
@@ -143,4 +144,4 @@ services:
 
 secrets:
   cloudflared_token:
-    file: ${CLOUDFLARED_TOKEN_FILE:-/opt/thymble/secrets/cloudflared-token}
+    file: ${CLOUDFLARED_TOKEN_FILE:-/opt/larder/secrets/cloudflared-token}

@@ -1,6 +1,6 @@
 """Shared line-rule vectors (D-033): the server rules are the reference implementation.
 
-tests/vectors/ingredient_lines.json is also run by ThymbleKit (Swift). Format and comparison
+tests/vectors/ingredient_lines.json is also run by LarderKit (Swift). Format and comparison
 rules: tests/vectors/README.md. A failure here is a server bug or a wrong vector, never
 something to paper over in this file.
 """
@@ -14,8 +14,8 @@ from typing import Any
 
 import pytest
 
-from thymble.importer.ingredients import parse_lines
-from thymble.shopping.text import parse_entry
+from larder.importer.ingredients import parse_lines
+from larder.shopping.text import parse_entry
 
 VECTORS = Path(__file__).parent / "vectors" / "ingredient_lines.json"
 DOC = json.loads(VECTORS.read_text(encoding="utf-8"))

@@ -1,4 +1,4 @@
-"""Alembic environment: runs migrations with Thymble's own settings and models."""
+"""Alembic environment: runs migrations with larder's own settings and models."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import create_engine, pool
 
-from thymble.config import get_settings
-from thymble.models import Base
+from larder.config import get_settings
+from larder.models import Base
 
 config = context.config
 if config.config_file_name is not None and config.attributes.get("configure_logging", True):

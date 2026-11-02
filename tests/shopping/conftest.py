@@ -18,9 +18,9 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, sessionmaker
 
-from thymble.config import normalize_db_url
-from thymble.models import Base, Household, ShoppingList, Store, StoreGroup, StoreGroupMember
-from thymble.shopping.service import ShoppingService
+from larder.config import normalize_db_url
+from larder.models import Base, Household, ShoppingList, Store, StoreGroup, StoreGroupMember
+from larder.shopping.service import ShoppingService
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -31,7 +31,7 @@ def shop_db_url() -> Iterator[str]:
     if not raw:
         pytest.skip("DATABASE_URL not set")
     admin_url = make_url(normalize_db_url(raw))
-    name = f"thymble_shop_{uuid.uuid4().hex[:8]}"
+    name = f"larder_shop_{uuid.uuid4().hex[:8]}"
     admin = create_engine(admin_url, isolation_level="AUTOCOMMIT")
     with admin.connect() as conn:
         conn.execute(text(f'CREATE DATABASE "{name}"'))

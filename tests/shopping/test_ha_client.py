@@ -4,14 +4,14 @@ import asyncio
 
 import pytest
 
-from tests.shopping.fake_ha import FakeHA
-from thymble.connectors.home_assistant.client import (
+from larder.connectors.home_assistant.client import (
     AuthError,
     ConnectionClosed,
     HAClient,
     HAError,
     websocket_url,
 )
+from tests.shopping.fake_ha import FakeHA
 
 pytestmark = pytest.mark.asyncio
 
@@ -45,7 +45,7 @@ async def test_events_fire_twice_identically_and_service_returns_no_items():
     await c.subscribe_todo(E, events.append)
     await asyncio.sleep(0.01)
     assert events == [{"items": []}]  # initial snapshot
-    await c.call_service("add_item", E, {"item": "thymble test item"})
+    await c.call_service("add_item", E, {"item": "larder test item"})
     await asyncio.sleep(0.1)
     assert len(events) == 3 and events[1] == events[2]
     item = events[1]["items"][0]
@@ -73,10 +73,10 @@ async def test_window_drops_oldest_and_restores_when_list_shrinks():
     c = await client(fake)
     snap = await c.list_items(E)
     assert len(snap) == 100 and snap[0]["summary"] == "Cheese"
-    await c.call_service("add_item", E, {"item": "thymble test item"})
+    await c.call_service("add_item", E, {"item": "larder test item"})
     snap = await c.list_items(E)
     assert len(snap) == 100 and "Cheese" not in [i["summary"] for i in snap]
-    await c.call_service("remove_item", E, {"item": "thymble test item"})
+    await c.call_service("remove_item", E, {"item": "larder test item"})
     assert "Cheese" in [i["summary"] for i in await c.list_items(E)]
     await c.close()
 

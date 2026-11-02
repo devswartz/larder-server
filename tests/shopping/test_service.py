@@ -5,7 +5,7 @@ from decimal import Decimal
 import pytest
 from sqlalchemy import select
 
-from thymble.models import (
+from larder.models import (
     Ingredient,
     ItemStatus,
     ItemStorePref,
@@ -13,7 +13,7 @@ from thymble.models import (
     ShoppingItemSource,
     Urgency,
 )
-from thymble.shopping.errors import ShoppingError
+from larder.shopping.errors import ShoppingError
 
 pytestmark = pytest.mark.db
 

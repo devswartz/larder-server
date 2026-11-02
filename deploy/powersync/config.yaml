@@ -22,16 +22,16 @@ port: 8080
 sync_config:
   path: sync-config.yaml
 
-# Clients authenticate with short-lived HS256 JWTs minted by the Thymble api
+# Clients authenticate with short-lived HS256 JWTs minted by the larder api
 # (architecture §9). The key is shared through POWERSYNC_JWT_SECRET (base64url).
 client_auth:
   jwks:
     keys:
       - kty: oct
         alg: HS256
-        kid: thymble-api
+        kid: larder-api
         k: !env PS_JWT_SECRET
-  audience: ["thymble-powersync"]
+  audience: ["larder-powersync"]
 
 api:
   tokens:

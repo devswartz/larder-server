@@ -5,8 +5,8 @@ FROM postgres:17-bookworm
 RUN apt-get update \
     && apt-get install -y --no-install-recommends age rclone curl ca-certificates tzdata \
     && rm -rf /var/lib/apt/lists/*
-COPY backup.sh /usr/local/bin/thymble-backup
-COPY restore.sh /usr/local/bin/thymble-restore
-RUN chmod 0755 /usr/local/bin/thymble-backup /usr/local/bin/thymble-restore
-ENTRYPOINT ["thymble-backup"]
+COPY backup.sh /usr/local/bin/larder-backup
+COPY restore.sh /usr/local/bin/larder-restore
+RUN chmod 0755 /usr/local/bin/larder-backup /usr/local/bin/larder-restore
+ENTRYPOINT ["larder-backup"]
 CMD ["schedule"]

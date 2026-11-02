@@ -8,9 +8,9 @@ import jwt
 import pytest
 from fastapi.testclient import TestClient
 
+from larder.auth.apple import AppleTokenError, AppleVerifier, StaticKeySource, nonce_hash
+from larder.main import create_app
 from tests.auth.conftest import BUNDLE_ID, FakeApple, auth_settings, sign_in
-from thymble.auth.apple import AppleTokenError, AppleVerifier, StaticKeySource, nonce_hash
-from thymble.main import create_app
 
 NONCE = "n" * 32
 

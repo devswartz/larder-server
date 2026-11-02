@@ -28,30 +28,30 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine, make_url
 from sqlalchemy.orm import Session, sessionmaker
 
+from larder.auth.apple import APPLE_ISSUER, AppleVerifier, StaticKeySource, get_apple_verifier
+from larder.auth.email import get_email_sender
+from larder.config import Settings, normalize_db_url
+from larder.db.deps import get_db
+from larder.main import create_app
+from larder.models import Base
+from larder.ratelimit import MemoryRateLimiter, get_rate_limiter
 from tests.conftest import make_settings
-from thymble.auth.apple import APPLE_ISSUER, AppleVerifier, StaticKeySource, get_apple_verifier
-from thymble.auth.email import get_email_sender
-from thymble.config import Settings, normalize_db_url
-from thymble.db.deps import get_db
-from thymble.main import create_app
-from thymble.models import Base
-from thymble.ratelimit import MemoryRateLimiter, get_rate_limiter
 
 ROOT = Path(__file__).resolve().parents[2]
-BUNDLE_ID = "com.example.thymble"
+BUNDLE_ID = "com.example.larder"
 APPLE_KID = "test-key-1"
-PUBLIC_URL = "https://thymble.test"
+PUBLIC_URL = "https://larder.test"
 
 
 def auth_settings(**overrides: Any) -> Settings:
     values: dict[str, Any] = {
-        "thymble_public_url": PUBLIC_URL,
+        "larder_public_url": PUBLIC_URL,
         "auth_jwt_secret": "test-auth-secret-0123456789abcdefghijklmnop",
         "powersync_jwt_secret": base64.urlsafe_b64encode(b"p" * 32).decode().rstrip("="),
-        "powersync_url": "https://sync.thymble.test",
+        "powersync_url": "https://sync.larder.test",
         "apple_bundle_id": BUNDLE_ID,
-        "smtp_host": "smtp.thymble.test",
-        "smtp_from": "thymble@thymble.test",
+        "smtp_host": "smtp.larder.test",
+        "smtp_from": "larder@larder.test",
     }
     values.update(overrides)
     return make_settings(**values)
@@ -127,7 +127,7 @@ def db_engine() -> Iterator[Engine]:
     if not raw:
         pytest.skip("DATABASE_URL not set")
     admin_url = make_url(normalize_db_url(raw))
-    name = f"thymble_test_{uuid.uuid4().hex[:8]}"
+    name = f"larder_test_{uuid.uuid4().hex[:8]}"
     admin = create_engine(admin_url, isolation_level="AUTOCOMMIT")
     with admin.connect() as conn:
         conn.execute(text(f'CREATE DATABASE "{name}"'))

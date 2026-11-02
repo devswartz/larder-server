@@ -7,8 +7,8 @@ from pathlib import Path
 
 import yaml
 
-from thymble.models import Base
-from thymble.sync import registered_tables
+from larder.models import Base
+from larder.sync import registered_tables
 
 CONFIG = Path(__file__).resolve().parent.parent / "deploy" / "powersync" / "sync-config.yaml"
 

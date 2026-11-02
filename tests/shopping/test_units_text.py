@@ -2,9 +2,9 @@ from decimal import Decimal
 
 import pytest
 
-from thymble.shopping.text import name_key, parse_entry
-from thymble.units import compatible, convert, format_quantity
-from thymble.units import normalize as normalize_unit
+from larder.shopping.text import name_key, parse_entry
+from larder.units import compatible, convert, format_quantity
+from larder.units import normalize as normalize_unit
 
 
 @pytest.mark.parametrize(
@@ -63,7 +63,7 @@ def test_format_quantity():
 
 
 def test_household_store_names_are_hints():
-    from thymble.shopping.text import parse_entry
+    from larder.shopping.text import parse_entry
 
     p = parse_entry("eggs from Corner Market", ["Corner Market"])
     assert (p.name, p.store_hint) == ("eggs", "corner market")

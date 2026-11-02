@@ -9,10 +9,8 @@ from pathlib import Path
 import httpx
 import pytest
 
-from tests.conftest import make_settings
-from tests.llm_fakes import FakeProvider
-from thymble.importer import confidence
-from thymble.importer.confidence import (
+from larder.importer import confidence
+from larder.importer.confidence import (
     Assessment,
     assess_line,
     assess_step,
@@ -20,11 +18,13 @@ from thymble.importer.confidence import (
     looks_like_heading,
     redirect_reason,
 )
-from thymble.importer.extract import RecipeDraft, merge
-from thymble.importer.ingredients import ParsedLine, parse_line
-from thymble.importer.pipeline import ImportInput, ImportPipeline
-from thymble.importer.thresholds import REASONS, Level
-from thymble.llm import LLMClient, MemoryStore
+from larder.importer.extract import RecipeDraft, merge
+from larder.importer.ingredients import ParsedLine, parse_line
+from larder.importer.pipeline import ImportInput, ImportPipeline
+from larder.importer.thresholds import REASONS, Level
+from larder.llm import LLMClient, MemoryStore
+from tests.conftest import make_settings
+from tests.llm_fakes import FakeProvider
 
 FIXTURES = Path(__file__).parent / "fixtures" / "import"
 

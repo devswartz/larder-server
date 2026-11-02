@@ -14,10 +14,8 @@ import httpx
 import pytest
 from pydantic import BaseModel, ConfigDict
 
-from tests.conftest import make_settings
-from tests.llm_fakes import FakeProvider
-from thymble.llm import ImageInput, LLMClient, MemoryStore, Task, strict_schema
-from thymble.llm.providers import (
+from larder.llm import ImageInput, LLMClient, MemoryStore, Task, strict_schema
+from larder.llm.providers import (
     AnthropicProvider,
     LLMRequest,
     OpenAICompatibleProvider,
@@ -25,6 +23,8 @@ from thymble.llm.providers import (
     ProviderTimeout,
     estimate_cost,
 )
+from tests.conftest import make_settings
+from tests.llm_fakes import FakeProvider
 
 
 class Item(BaseModel):

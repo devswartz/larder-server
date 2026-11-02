@@ -4,10 +4,10 @@ from datetime import timedelta
 
 import pytest
 
-from thymble.models import ItemStatus, TripKind, TripStatus
-from thymble.shopping import trips
-from thymble.shopping.errors import Conflict, ShoppingError
-from thymble.shopping.service import utcnow
+from larder.models import ItemStatus, TripKind, TripStatus
+from larder.shopping import trips
+from larder.shopping.errors import Conflict, ShoppingError
+from larder.shopping.service import utcnow
 
 pytestmark = pytest.mark.db
 

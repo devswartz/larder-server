@@ -19,8 +19,8 @@ from alembic.migration import MigrationContext
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.engine import make_url
 
-from thymble.config import normalize_db_url
-from thymble.models import Base
+from larder.config import normalize_db_url
+from larder.models import Base
 
 pytestmark = pytest.mark.db
 
@@ -60,7 +60,7 @@ def db_url() -> Iterator[str]:
     if not raw:
         pytest.skip("DATABASE_URL not set")
     admin_url = make_url(normalize_db_url(raw))
-    name = f"thymble_test_{uuid.uuid4().hex[:8]}"
+    name = f"larder_test_{uuid.uuid4().hex[:8]}"
     admin = create_engine(admin_url, isolation_level="AUTOCOMMIT")
     with admin.connect() as conn:
         conn.execute(text(f'CREATE DATABASE "{name}"'))

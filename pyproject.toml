@@ -1,7 +1,7 @@
 [project]
-name = "thymble-server"
+name = "larder-server"
 version = "0.1.0"
-description = "Open-source, self-hostable server for the Thymble cooking app"
+description = "Open-source, self-hostable server for the Heartwood cooking app (codename larder)"
 readme = "README.md"
 license = "AGPL-3.0-only"
 license-files = ["LICENSE"]
@@ -40,7 +40,7 @@ requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/thymble"]
+packages = ["src/larder"]
 
 [tool.ruff]
 line-length = 100

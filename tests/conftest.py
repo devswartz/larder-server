@@ -3,8 +3,8 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from thymble.config import Settings
-from thymble.main import create_app
+from larder.config import Settings
+from larder.main import create_app
 
 
 def make_settings(**overrides: object) -> Settings:

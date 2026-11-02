@@ -31,18 +31,18 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_USER: thymble
+          POSTGRES_USER: larder
           POSTGRES_PASSWORD: ci-only-password
-          POSTGRES_DB: thymble
+          POSTGRES_DB: larder
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U thymble"
+          --health-cmd "pg_isready -U larder"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
     env:
-      DATABASE_URL: postgresql://thymble:ci-only-password@localhost:5432/thymble
+      DATABASE_URL: postgresql://larder:ci-only-password@localhost:5432/larder
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

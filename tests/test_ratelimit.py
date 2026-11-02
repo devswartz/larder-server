@@ -13,8 +13,7 @@ from fastapi import HTTPException
 from pydantic import ValidationError
 from starlette.requests import Request
 
-from tests.conftest import make_settings
-from thymble.ratelimit import (
+from larder.ratelimit import (
     KEY_PREFIX,
     Hit,
     Limit,
@@ -25,6 +24,7 @@ from thymble.ratelimit import (
     get_rate_limiter,
     parse_limit,
 )
+from tests.conftest import make_settings
 
 # --- parsing ---------------------------------------------------------------------------
 

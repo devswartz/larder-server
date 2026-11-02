@@ -10,9 +10,9 @@ import jwt
 import pytest
 from sqlalchemy import update
 
+from larder.auth.tokens import create_access_token, create_powersync_token, now
+from larder.models import RefreshToken
 from tests.auth.conftest import auth_settings, sign_in
-from thymble.auth.tokens import create_access_token, create_powersync_token, now
-from thymble.models import RefreshToken
 
 
 def test_powersync_token_matches_powersync_config():
@@ -21,8 +21,8 @@ def test_powersync_token_matches_powersync_config():
     secret = settings.powersync_jwt_secret.get_secret_value()
     key = base64.urlsafe_b64decode(secret + "=" * (-len(secret) % 4))
     header = jwt.get_unverified_header(token)
-    assert header["kid"] == "thymble-api" and header["alg"] == "HS256"
-    claims = jwt.decode(token, key, algorithms=["HS256"], audience="thymble-powersync")
+    assert header["kid"] == "larder-api" and header["alg"] == "HS256"
+    claims = jwt.decode(token, key, algorithms=["HS256"], audience="larder-powersync")
     assert claims["exp"] - claims["iat"] == settings.powersync_token_ttl_seconds
 
 

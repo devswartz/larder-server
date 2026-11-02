@@ -5,11 +5,11 @@ import uuid
 import pytest
 from fastapi.testclient import TestClient
 
+from larder.connectors.crypto import decrypt_credentials
+from larder.db.deps import get_db
+from larder.main import create_app
+from larder.models import ConnectorAccount
 from tests.accounts import Member, authed_settings, create_member
-from thymble.connectors.crypto import decrypt_credentials
-from thymble.db.deps import get_db
-from thymble.main import create_app
-from thymble.models import ConnectorAccount
 
 pytestmark = pytest.mark.db
 
@@ -44,10 +44,10 @@ def ok(response, code=200):
 
 def test_unauthenticated_requests_are_rejected(sessions, member):
     for env_name in ("production", "development"):
-        client = make_client(sessions, thymble_env=env_name)
+        client = make_client(sessions, larder_env=env_name)
         assert client.get("/v1/shopping/lists").status_code == 401
         # Naming a household without a token is not enough, in any environment.
-        hdr = {"X-Thymble-Household": str(member.household_id)}
+        hdr = {"X-Larder-Household": str(member.household_id)}
         assert client.get("/v1/shopping/lists", headers=hdr).status_code == 401
     # A token without a household is a bad request; a household the user isn't in is 404.
     client = make_client(sessions)
