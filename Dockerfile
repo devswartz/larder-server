@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Thymble server image. Targets:
+# larder server image. Targets:
 #   prod (default) - runtime dependencies only
 #   dev            - adds test/lint tools; used by docker-compose.override.yml with hot reload
 
@@ -15,7 +15,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_PROJECT_ENVIRONMENT=/opt/venv \
     PATH="/opt/venv/bin:$PATH"
 WORKDIR /app
-RUN useradd --create-home --uid 10001 thymble
+RUN useradd --create-home --uid 10001 larder
 
 FROM base AS prod
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -27,9 +27,9 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev --no-editable
 # ingredient-parser-nlp needs an NLTK tagger; fetch it at build time, not at worker start.
 RUN python -c "import nltk; nltk.download('averaged_perceptron_tagger_eng', download_dir='/usr/local/share/nltk_data', quiet=True)"
-USER thymble
+USER larder
 EXPOSE 8000
-CMD ["uvicorn", "thymble.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
+CMD ["uvicorn", "larder.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
 
 FROM base AS dev
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -41,8 +41,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked
 # ingredient-parser-nlp needs an NLTK tagger; fetch it at build time, not at worker start.
 RUN python -c "import nltk; nltk.download('averaged_perceptron_tagger_eng', download_dir='/usr/local/share/nltk_data', quiet=True)"
-USER thymble
+USER larder
 EXPOSE 8000
-CMD ["uvicorn", "thymble.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "src"]
+CMD ["uvicorn", "larder.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "src"]
 
 FROM prod

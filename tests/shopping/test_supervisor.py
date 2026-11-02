@@ -4,11 +4,11 @@ import asyncio
 
 import pytest
 
+from larder.connectors.crypto import encrypt_credentials
+from larder.connectors.home_assistant.supervisor import ConnectorSupervisor
+from larder.models import ConnectorAccount
 from tests.conftest import make_settings
 from tests.shopping.fake_ha import FakeHA
-from thymble.connectors.crypto import encrypt_credentials
-from thymble.connectors.home_assistant.supervisor import ConnectorSupervisor
-from thymble.models import ConnectorAccount
 
 pytestmark = [pytest.mark.asyncio, pytest.mark.db]
 

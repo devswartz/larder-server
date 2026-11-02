@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
+import smtplib
 from datetime import timedelta
+from email.message import EmailMessage
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select, update
 
+from larder.auth.email import SmtpEmailSender, from_header, get_email_sender, magic_link
+from larder.auth.tokens import now
+from larder.main import create_app
+from larder.models import EmailLoginToken
 from tests.auth.conftest import PUBLIC_URL, auth_settings, build_client
-from thymble.auth.email import get_email_sender, magic_link
-from thymble.auth.tokens import now
-from thymble.main import create_app
-from thymble.models import EmailLoginToken
 
 pytestmark = pytest.mark.db
 
@@ -110,3 +112,51 @@ def test_email_sign_in_off_without_smtp(session_factory, fake_apple, outbox):
 def test_magic_link_url_override():
     settings = auth_settings(magic_link_url="https://app.example.com/signin?src=mail")
     assert magic_link(settings, "abc") == "https://app.example.com/signin?src=mail&token=abc"
+
+
+def test_subject_and_body_use_default_app_name(api, outbox):
+    request_link(api, "brand@example.com")
+    message = outbox.messages[0]
+    assert message["subject"] == "Your Heartwood sign-in link"
+    assert "sign in to Heartwood." in message["body"]
+
+
+def test_subject_and_body_follow_app_name(session_factory, fake_apple, outbox):
+    api = build_client(session_factory, fake_apple, outbox, auth_settings(app_name="Pantry"))
+    request_link(api, "brand@example.com")
+    message = outbox.messages[0]
+    assert message["subject"] == "Your Pantry sign-in link"
+    assert "sign in to Pantry." in message["body"]
+    assert "Heartwood" not in message["subject"] + message["body"]
+
+
+@pytest.mark.parametrize(
+    ("smtp_from", "expected"),
+    [
+        ("larder@example.com", "Pantry <larder@example.com>"),
+        ("Kitchen Bot <bot@example.com>", "Kitchen Bot <bot@example.com>"),
+    ],
+)
+def test_from_header_display_name(monkeypatch, smtp_from, expected):
+    sent: list[EmailMessage] = []
+
+    class FakeSMTP:
+        def __init__(self, *args: object, **kwargs: object) -> None: ...
+        def __enter__(self) -> FakeSMTP:
+            return self
+
+        def __exit__(self, *exc: object) -> None: ...
+        def starttls(self, **kwargs: object) -> None: ...
+        def send_message(self, message: EmailMessage) -> None:
+            sent.append(message)
+
+    monkeypatch.setattr(smtplib, "SMTP", FakeSMTP)
+    settings = auth_settings(app_name="Pantry", smtp_from=smtp_from)
+    SmtpEmailSender(settings).send("cook@example.com", "subject", "body")
+    assert sent[0]["From"] == expected
+
+
+def test_from_header_helper():
+    assert from_header("a@example.com", "Heartwood") == "Heartwood <a@example.com>"
+    assert from_header('"Named" <a@example.com>', "Heartwood") == '"Named" <a@example.com>'
+    assert from_header("", "Heartwood") == ""

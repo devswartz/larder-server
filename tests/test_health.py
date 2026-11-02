@@ -1,4 +1,4 @@
-from thymble import __version__
+from larder import __version__
 
 
 def test_healthz(client):

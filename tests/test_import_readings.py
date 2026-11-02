@@ -6,8 +6,8 @@ from fractions import Fraction
 
 import pytest
 
-from thymble.importer import textnorm
-from thymble.importer.readings import align, compare, split_device_text
+from larder.importer import textnorm
+from larder.importer.readings import align, compare, split_device_text
 
 # ------------------------------------------------------------------ normalization
 

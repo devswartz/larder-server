@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 
+from larder.main import create_app
 from tests.conftest import make_settings
-from thymble.main import create_app
 
 
 def capabilities(**settings: object) -> dict:
@@ -13,6 +13,7 @@ def capabilities(**settings: object) -> dict:
 
 def test_defaults_report_nothing_optional():
     body = capabilities()
+    assert body["app_name"] == "Heartwood"
     assert body["api_version"] == "1.0"
     assert body["llm"] is False
     assert body["photo_import"] is False
@@ -39,7 +40,7 @@ def test_photo_import_can_be_switched_off():
 
 
 def test_smtp_enables_email_sign_in():
-    body = capabilities(smtp_host="smtp.example.com", smtp_from="thymble@example.com")
+    body = capabilities(smtp_host="smtp.example.com", smtp_from="larder@example.com")
     assert body["email_sign_in"] is True
 
 
@@ -50,3 +51,12 @@ def test_connectors_from_comma_separated_env(monkeypatch):
     body = capabilities()
     assert body["connectors"] == {"lists": ["home_assistant"], "retailers": ["walmart", "kroger"]}
     assert body["shared_learning"] is True
+
+
+def test_app_name_from_setting():
+    assert capabilities(app_name="Pantry")["app_name"] == "Pantry"
+
+
+def test_app_name_from_env(monkeypatch):
+    monkeypatch.setenv("APP_NAME", "Pantry")
+    assert capabilities()["app_name"] == "Pantry"

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from collections.abc import Callable
 
-from thymble.llm.providers import LLMRequest, LLMResponse
+from larder.llm.providers import LLMRequest, LLMResponse
 
 
 class FakeProvider:

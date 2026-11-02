@@ -2,7 +2,7 @@
 
 Usage (from the repo root):  python scripts/dev_env.py [--force]
 
-Every `change-me` placeholder gets a fresh random value, and THYMBLE_ENV is set to
+Every `change-me` placeholder gets a fresh random value, and LARDER_ENV is set to
 `development`. The result is for your machine only: .env is git-ignored, never commit it.
 """
 
@@ -17,9 +17,9 @@ EXAMPLE = ROOT / ".env.example"
 TARGET = ROOT / ".env"
 
 OVERRIDES = {
-    "THYMBLE_ENV": "development",
+    "LARDER_ENV": "development",
     "LOG_LEVEL": "debug",
-    "THYMBLE_PUBLIC_URL": "http://localhost:8000",
+    "LARDER_PUBLIC_URL": "http://localhost:8000",
     "POWERSYNC_URL": "http://localhost:8080",
     # Magic-link email goes to the Mailpit container from docker-compose.override.yml
     # (web UI on http://localhost:8025).

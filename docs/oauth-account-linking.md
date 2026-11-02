@@ -1,12 +1,12 @@
 # OAuth2 account linking (Alexa) — design
 
 Status: **design only, not implemented.** This describes how the server will let an Alexa
-skill (and later other third parties) act for a Thymble user. Nothing here exists yet.
+skill (and later other third parties) act for a Heartwood user. Nothing here exists yet.
 
 ## Goal
 
-A user links the Thymble Alexa skill to their Thymble account once, then says "Alexa, add
-milk to Thymble". Alexa account linking requires an OAuth 2.0 **authorization-code grant**
+A user links the Heartwood Alexa skill to their Heartwood account once, then says "Alexa, add
+milk to Heartwood". Alexa account linking requires an OAuth 2.0 **authorization-code grant**
 (RFC 6749 §4.1): Alexa sends the user to our authorization endpoint, we send back a code,
 and Alexa's servers exchange it at our token endpoint for an access and refresh token,
 which they then refresh on their own.
@@ -14,11 +14,11 @@ which they then refresh on their own.
 ## What already exists
 
 - Refresh tokens record a `client_id` (`auth_refresh_token.client_id`) and access tokens
-  carry it as a claim. The app is `thymble-app`; Alexa becomes `alexa`.
+  carry it as a claim. The app is `larder-app`; Alexa becomes `alexa`.
 - `tokens.issue_token_pair(..., client_id=...)` and `tokens.rotate_refresh_token` already do
   issuing and rotation, including the reuse grace (`REFRESH_REUSE_GRACE_SECONDS`), which
   matters here: Alexa retries refreshes, and a retry must not log the user out.
-- Rate limiting (`thymble.ratelimit`) for the new endpoints.
+- Rate limiting (`larder.ratelimit`) for the new endpoints.
 
 ## Endpoints
 
@@ -26,7 +26,7 @@ which they then refresh on their own.
 |---|---|---|
 | `GET /oauth/authorize` | The user's browser, sent by Alexa | Validates `response_type=code`, `client_id`, `redirect_uri` (exact match against the client's registered list), `state`, `scope`, optional PKCE `code_challenge` (`S256` only). Shows a small server-rendered page: sign in (email magic link that returns to this page, or Sign in with Apple JS), then a consent screen: "Let Alexa read and add to the shopping list of *household*?" with a household picker. Invalid `client_id`/`redirect_uri` shows an error page and never redirects. |
 | `POST /oauth/authorize` | The consent form (CSRF token, same-site session cookie) | On approve: stores a one-time code and redirects `302` to `redirect_uri?code=...&state=...`. On deny: `redirect_uri?error=access_denied&state=...`. |
-| `POST /v1/oauth/authorize` | The Thymble iOS app (bearer token), for **app-to-app linking** | Same checks as above, but the user is already signed in in the app, so no web sign-in: the app shows its own consent sheet and gets back the redirect URL to hand to Alexa. Preferred path on iPhone. |
+| `POST /v1/oauth/authorize` | The Heartwood iOS app (bearer token), for **app-to-app linking** | Same checks as above, but the user is already signed in in the app, so no web sign-in: the app shows its own consent sheet and gets back the redirect URL to hand to Alexa. Preferred path on iPhone. |
 | `POST /oauth/token` | Alexa's servers | `grant_type=authorization_code` (code, redirect_uri, code_verifier if PKCE was used) or `grant_type=refresh_token`. Client authentication with HTTP Basic (`client_id:client_secret`) or form fields. Returns `{"access_token", "token_type": "bearer", "expires_in", "refresh_token", "scope"}` per RFC 6749 §5.1; errors per §5.2 (`invalid_grant`, `invalid_client`, ...). `Cache-Control: no-store`. |
 | `GET /v1/oauth/grants`, `DELETE /v1/oauth/grants/{client_id}` | The app | Lists linked services and unlinks one (revokes every refresh token of that user + client). |
 
@@ -46,8 +46,8 @@ which they then refresh on their own.
 ## Scopes and enforcement
 
 Start with one scope, `shopping_list` (read the list, add and check items). Access tokens
-for any `client_id` other than `thymble-app` must carry `household_id` and `scope`; a
-dependency next to `get_current_household` checks both and ignores `X-Thymble-Household`.
+for any `client_id` other than `larder-app` must carry `household_id` and `scope`; a
+dependency next to `get_current_household` checks both and ignores `X-Larder-Household`.
 Third-party tokens never reach sync, account or household-management routes.
 
 ## Security notes

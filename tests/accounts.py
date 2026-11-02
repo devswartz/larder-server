@@ -1,7 +1,7 @@
 """Signed-in test members: a user, their household membership and an access token.
 
-Household-scoped routes need a bearer token plus the household in `X-Thymble-Household`
-(`thymble.auth.deps.get_current_household`). `create_member` writes the rows straight to
+Household-scoped routes need a bearer token plus the household in `X-Larder-Household`
+(`larder.auth.deps.get_current_household`). `create_member` writes the rows straight to
 the database and mints a real access token, so API tests go through the production
 dependency rather than overriding it.
 """
@@ -14,11 +14,11 @@ from typing import Any
 
 from sqlalchemy.orm import sessionmaker
 
+from larder.auth.deps import HOUSEHOLD_HEADER
+from larder.auth.tokens import create_access_token
+from larder.config import Settings
+from larder.models import Household, HouseholdMember, HouseholdRole, User
 from tests.conftest import make_settings
-from thymble.auth.deps import HOUSEHOLD_HEADER
-from thymble.auth.tokens import create_access_token
-from thymble.config import Settings
-from thymble.models import Household, HouseholdMember, HouseholdRole, User
 
 TEST_AUTH_SECRET = "test-auth-secret-0123456789abcdefghijklmnop"
 

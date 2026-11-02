@@ -12,15 +12,15 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
+from larder.api.imports import get_enqueue
+from larder.db.deps import get_db
+from larder.importer.jobs import import_recipe
+from larder.llm import DbStore, LLMClient
+from larder.main import create_app
+from larder.models import Ingredient, LearningEvent, Recipe, RecipeIngredient, RecipeStep
 from tests.accounts import Member, authed_settings, create_member
 from tests.llm_fakes import FakeProvider
 from tests.test_import_api import db_url, post_page, sm  # noqa: F401 - shared fixtures
-from thymble.api.imports import get_enqueue
-from thymble.db.deps import get_db
-from thymble.importer.jobs import import_recipe
-from thymble.llm import DbStore, LLMClient
-from thymble.main import create_app
-from thymble.models import Ingredient, LearningEvent, Recipe, RecipeIngredient, RecipeStep
 
 pytestmark = pytest.mark.db
 
@@ -126,7 +126,7 @@ def settle_rest(status: dict, skip: set | None = None) -> list[dict]:
 
 
 def test_photo_import_reports_and_persists_confidence(client, member, sm):  # noqa: F811
-    from thymble.models import ImportJob
+    from larder.models import ImportJob
 
     status = misread_card(client, member)
     assert status["needs_review"] is True

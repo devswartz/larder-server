@@ -1,6 +1,6 @@
 """In-process fake of Home Assistant's WebSocket API for `todo` entities.
 
-Ported from the Thymble planning repo's spikes/ha-connector. Reproduces the behavior
+Ported from the planning repo's spikes/ha-connector. Reproduces the behavior
 verified against HA 2026.9.4 + `alexa_devices` (architecture §6.3):
 
 * WebSocket protocol shape: `auth_required` -> `auth` -> `auth_ok`, then
@@ -34,7 +34,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
-from thymble.connectors.home_assistant.client import ConnectionClosed
+from larder.connectors.home_assistant.client import ConnectionClosed
 
 _CLOSED = object()
 

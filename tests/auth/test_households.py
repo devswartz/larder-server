@@ -7,9 +7,9 @@ from datetime import timedelta
 import pytest
 from sqlalchemy import update
 
+from larder.auth.tokens import now
+from larder.models import HouseholdInvite
 from tests.auth.conftest import SignedIn, sign_in
-from thymble.auth.tokens import now
-from thymble.models import HouseholdInvite
 
 pytestmark = pytest.mark.db
 

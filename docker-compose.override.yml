@@ -8,16 +8,16 @@ services:
   migrate:
     build:
       target: dev
-    image: thymble-server:dev
+    image: larder-server:dev
     volumes:
       - .:/app
 
   api:
     build:
       target: dev
-    image: thymble-server:dev
+    image: larder-server:dev
     environment:
-      THYMBLE_ENV: development
+      LARDER_ENV: development
       PYTEST_ADDOPTS: "-p no:cacheprovider"
     volumes:
       - .:/app
@@ -25,8 +25,8 @@ services:
   worker:
     build:
       target: dev
-    image: thymble-server:dev
-    command: ["arq", "thymble.worker.WorkerSettings", "--watch", "src"]
+    image: larder-server:dev
+    command: ["arq", "larder.worker.WorkerSettings", "--watch", "src"]
     volumes:
       - .:/app
 

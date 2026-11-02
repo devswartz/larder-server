@@ -5,8 +5,8 @@ from decimal import Decimal
 
 import pytest
 
-from thymble.models import Ingredient, MealPlanEntry, MealSlot, Recipe, RecipeIngredient
-from thymble.shopping import mealplan
+from larder.models import Ingredient, MealPlanEntry, MealSlot, Recipe, RecipeIngredient
+from larder.shopping import mealplan
 
 pytestmark = pytest.mark.db
 

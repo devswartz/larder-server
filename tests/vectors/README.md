@@ -1,11 +1,11 @@
 # Shared line-rule test vectors (D-033)
 
 Ingredient-line rules exist twice: here in the server (Python) and on the device in
-ThymbleKit (Swift, used by the free tier). `ingredient_lines.json` pins what both must do.
+LarderKit (Swift, used by the free tier). `ingredient_lines.json` pins what both must do.
 The server is the reference; a difference between the two is a bug. Every line in the file
-is synthetic, written for Thymble; never add text copied from a recipe site or cookbook.
+is synthetic, written for larder; never add text copied from a recipe site or cookbook.
 
-The server runs the file in `tests/test_line_vectors.py`. ThymbleKit should load the same
+The server runs the file in `tests/test_line_vectors.py`. LarderKit should load the same
 file (copy it into the package's test resources, or point the test at a checkout of this
 repo) and apply the comparison rules below.
 
@@ -66,8 +66,8 @@ substitutes; "or as needed" and "half-and-half" are never split.
 ### Unit codes
 
 Recipe lines and voice items use the same codes; the server's one table is
-`src/thymble/units.py` (`UNITS`, with every accepted spelling in `ALIASES`). The codes
-are the importer's (and ThymbleKit's): lower-case ASCII, and `fl oz` is the one code with
+`src/larder/units.py` (`UNITS`, with every accepted spelling in `ALIASES`). The codes
+are the importer's (and LarderKit's): lower-case ASCII, and `fl oz` is the one code with
 a space. Underscores read as spaces (the parser's `fluid_ounce` = `fl oz`).
 
 | kind | codes |
@@ -95,7 +95,7 @@ rule runs, so "we’re out of milk" is urgent like "we're out of milk" (V23).
 
 | field | type | rule |
 |---|---|---|
-| `name` | string | The item with keywords, store hints and quantity removed. Thymble's own mirror decorations (" (small)", "— on Walmart order") are removed too. |
+| `name` | string | The item with keywords, store hints and quantity removed. The app's own mirror decorations (" (small)", "— on Walmart order") are removed too. |
 | `quantity`, `unit` | number / string or null | Leading amount ("2 lbs" = 2 `lb`, "1 gallon" = 1 `gal`, "3 cans" = 3 `can`). |
 | `urgent` | bool | "urgent", "urgent:", "asap", "need", "we're out of" at the start; "urgent" / "asap" at the end (§6.4, D-029). |
 | `store` | string or null | Store hint, lower-case: a known chain at the start ("costco paper towels") or after "from"/"at" at the end ("bread from aldi"). Spelling variants map to one value ("Trader Joes" = `trader joe's`). A store name alone is an item, not a hint. |

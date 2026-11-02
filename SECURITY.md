@@ -10,7 +10,7 @@ You can expect an acknowledgement within a few days. We'll keep you updated whil
 
 ## Supported versions
 
-Thymble Server is in early development and has no releases yet. Once releases begin, security fixes will go to the latest release.
+larder-server (the server behind Heartwood) is in early development and has no releases yet. Once releases begin, security fixes will go to the latest release.
 
 ## Scope notes for self-hosters
 

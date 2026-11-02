@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Restore a Thymble backup made by thymble-backup.
+# Restore a larder backup made by larder-backup.
 #
-#   thymble-restore --verify FILE   restore into a scratch database, print row counts, drop
+#   larder-restore --verify FILE   restore into a scratch database, print row counts, drop
 #                                   it. Safe to run any time; production is untouched.
-#   thymble-restore --yes FILE      REPLACE the live database (PGDATABASE) with FILE, then
+#   larder-restore --yes FILE      REPLACE the live database (PGDATABASE) with FILE, then
 #                                   reset PowerSync's storage so it re-replicates.
 #
 # FILE is a path, or a name inside BACKUP_DIR (/backups). Encrypted dumps (*.age) need the
@@ -13,7 +13,7 @@ set -Eeuo pipefail
 umask 077
 
 BACKUP_DIR="${BACKUP_DIR:-/backups}"
-PGDATABASE="${PGDATABASE:-thymble}"
+PGDATABASE="${PGDATABASE:-larder}"
 export PGDATABASE
 POWERSYNC_STORAGE_DB="${POWERSYNC_STORAGE_DB:-powersync_storage}"
 POWERSYNC_ROLE="${POWERSYNC_ROLE:-powersync_role}"
@@ -83,7 +83,7 @@ SQL
 }
 
 if [ "$mode" = verify ]; then
-	scratch="thymble_restore_check_$$"
+	scratch="larder_restore_check_$$"
 	log "restoring $(basename "$file") into scratch database $scratch"
 	createdb "$scratch"
 	pg_restore --exit-on-error --no-owner --no-privileges --dbname="$scratch" "$dump"

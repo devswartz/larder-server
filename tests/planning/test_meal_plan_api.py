@@ -10,9 +10,9 @@ from decimal import Decimal
 import pytest
 from sqlalchemy import func, select
 
+from larder.models import Ingredient, MealPlanEntry, Recipe, ShoppingItem
+from larder.sync import registered_tables
 from tests.shopping.test_api import ok
-from thymble.models import Ingredient, MealPlanEntry, Recipe, ShoppingItem
-from thymble.sync import registered_tables
 
 pytestmark = pytest.mark.db
 

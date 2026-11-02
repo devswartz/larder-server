@@ -20,8 +20,8 @@ OUTPUT = ROOT / "docs" / "openapi.json"
 
 def render() -> str:
     """The OpenAPI document as stable, pretty-printed JSON (settings don't affect it)."""
-    from thymble.config import Settings
-    from thymble.main import create_app
+    from larder.config import Settings
+    from larder.main import create_app
 
     app = create_app(Settings(_env_file=None))
     return json.dumps(app.openapi(), indent=2, ensure_ascii=False) + "\n"

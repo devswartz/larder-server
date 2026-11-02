@@ -1,4 +1,4 @@
-"""The one unit table (`thymble.units`), shared by the importer and the shopping list."""
+"""The one unit table (`larder.units`), shared by the importer and the shopping list."""
 
 from __future__ import annotations
 
@@ -6,9 +6,9 @@ from decimal import Decimal
 
 import pytest
 
-from thymble import units
-from thymble.importer import rules
-from thymble.shopping.text import parse_entry
+from larder import units
+from larder.importer import rules
+from larder.shopping.text import parse_entry
 
 
 @pytest.mark.parametrize(

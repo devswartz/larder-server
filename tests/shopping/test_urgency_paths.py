@@ -13,9 +13,9 @@ import uuid
 import pytest
 from sqlalchemy import select
 
+from larder.models import ItemStatus, ShoppingItem, Urgency
 from tests.accounts import Member, authed_settings, create_member
 from tests.shopping.test_api import make_client, ok
-from thymble.models import ItemStatus, ShoppingItem, Urgency
 
 pytestmark = pytest.mark.db
 

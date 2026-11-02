@@ -8,10 +8,10 @@ from datetime import timedelta
 import pytest
 from sqlalchemy import select, update
 
+from larder.auth import tokens
+from larder.auth.tokens import hash_secret, now
+from larder.models import RefreshToken
 from tests.auth.conftest import auth_settings, build_client, sign_in
-from thymble.auth import tokens
-from thymble.auth.tokens import hash_secret, now
-from thymble.models import RefreshToken
 
 pytestmark = pytest.mark.db
 

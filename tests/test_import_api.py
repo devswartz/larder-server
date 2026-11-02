@@ -18,14 +18,14 @@ from sqlalchemy import create_engine, select, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import sessionmaker
 
+from larder.api.imports import get_enqueue
+from larder.config import normalize_db_url
+from larder.db.deps import get_db
+from larder.importer.jobs import import_recipe
+from larder.llm import DbStore, LLMClient
+from larder.main import create_app
 from tests.accounts import Member, authed_settings, create_member
 from tests.llm_fakes import FakeProvider
-from thymble.api.imports import get_enqueue
-from thymble.config import normalize_db_url
-from thymble.db.deps import get_db
-from thymble.importer.jobs import import_recipe
-from thymble.llm import DbStore, LLMClient
-from thymble.main import create_app
 
 pytestmark = pytest.mark.db
 
@@ -39,7 +39,7 @@ def db_url() -> Iterator[str]:
     if not raw:
         pytest.skip("DATABASE_URL not set")
     admin_url = make_url(normalize_db_url(raw))
-    name = f"thymble_test_{uuid.uuid4().hex[:8]}"
+    name = f"larder_test_{uuid.uuid4().hex[:8]}"
     admin = create_engine(admin_url, isolation_level="AUTOCOMMIT")
     with admin.connect() as conn:
         conn.execute(text(f'CREATE DATABASE "{name}"'))
@@ -126,7 +126,7 @@ def post_page(client: TestClient, member: Member, name: str = "jsonld_graph.html
 
 
 def test_device_html_import_saves_a_draft_recipe(env, member, household, sm):
-    from thymble.models import (
+    from larder.models import (
         ImportJob,
         Ingredient,
         IngredientAlias,
@@ -237,7 +237,7 @@ def test_failed_import_reports_the_reason(sm, member):
 
 
 def test_photo_import_multipart(env, member, sm):
-    from thymble.models import ImportJob
+    from larder.models import ImportJob
 
     client, _ = env
     response = client.post(
@@ -278,13 +278,13 @@ def test_request_validation(env, member, body):
 
 def test_imports_need_sign_in_in_every_environment():
     for env_name in ("production", "development"):
-        client = TestClient(create_app(authed_settings(thymble_env=env_name)))
+        client = TestClient(create_app(authed_settings(larder_env=env_name)))
         assert client.post("/v1/imports", json={"text": "x"}).status_code == 401
 
 
 def test_without_an_llm_every_line_is_still_linked(sm):
     """No LLM: unseen names become household ingredients, so the list gets clean names."""
-    from thymble.models import Ingredient, Recipe, RecipeIngredient
+    from larder.models import Ingredient, Recipe, RecipeIngredient
 
     settings = authed_settings()
     member = create_member(sm, settings)

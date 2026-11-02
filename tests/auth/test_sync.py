@@ -9,8 +9,7 @@ import jwt
 import pytest
 from sqlalchemy import func, select
 
-from tests.auth.conftest import SignedIn
-from thymble.models import (
+from larder.models import (
     Ingredient,
     MealPlanEntry,
     Recipe,
@@ -21,7 +20,8 @@ from thymble.models import (
     Store,
     Trip,
 )
-from thymble.sync import SyncTable, register, registered_tables
+from larder.sync import SyncTable, register, registered_tables
+from tests.auth.conftest import SignedIn
 
 pytestmark = pytest.mark.db
 
@@ -31,10 +31,10 @@ def test_sync_token_endpoint(api, alice):
     response = api.get("/v1/sync/token", headers=alice.headers)
     assert response.status_code == 200
     body = response.json()
-    assert body["endpoint"] == "https://sync.thymble.test"
+    assert body["endpoint"] == "https://sync.larder.test"
     claims = jwt.decode(body["token"], options={"verify_signature": False})
     assert claims["sub"] == alice.user_id
-    assert claims["aud"] == "thymble-powersync"
+    assert claims["aud"] == "larder-powersync"
 
 
 def upload(api, user: SignedIn, *entries: dict):

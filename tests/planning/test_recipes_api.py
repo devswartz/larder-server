@@ -8,8 +8,8 @@ from decimal import Decimal
 import pytest
 from sqlalchemy import select
 
+from larder.models import Ingredient, Recipe, RecipeIngredient, RecipeStep, RecipeTag, Tag
 from tests.shopping.test_api import ok
-from thymble.models import Ingredient, Recipe, RecipeIngredient, RecipeStep, RecipeTag, Tag
 
 pytestmark = pytest.mark.db
 

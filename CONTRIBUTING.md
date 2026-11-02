@@ -1,4 +1,4 @@
-# Contributing to Thymble Server
+# Contributing to larder-server
 
 Thanks for your interest. The project is in early development, so the best way to help right now is to open an issue to discuss an idea before writing code.
 

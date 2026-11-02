@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
+from larder.ratelimit import get_rate_limiter
 from tests.auth.conftest import auth_settings, build_client, sign_in
-from thymble.ratelimit import get_rate_limiter
 
 pytestmark = pytest.mark.db
 

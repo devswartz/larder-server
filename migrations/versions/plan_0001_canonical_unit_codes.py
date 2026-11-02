@@ -1,8 +1,8 @@
 """units: one set of unit codes for recipes and the shopping list
 
 The importer and the shopping list used to write different codes for the same unit.
-Both now use the table in `thymble.units`, whose codes are the importer's (and
-ThymbleKit's): "fl oz", "pt", "qt", "piece", "package". This rewrites the shopping list's
+Both now use the table in `larder.units`, whose codes are the importer's (and
+LarderKit's): "fl oz", "pt", "qt", "piece", "package". This rewrites the shopping list's
 old codes ("fl_oz", "pint", "quart", "ct", "pack") and spellings the old shopping
 normalizer stored as-is ("tin", "packet", "boxe").
 
@@ -27,7 +27,7 @@ down_revision: str | None = "shop_0001"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
-# Frozen here on purpose: migrations must not change when thymble.units does.
+# Frozen here on purpose: migrations must not change when larder.units does.
 OLD_TO_NEW = {
     "fl_oz": "fl oz",
     "fluid ounce": "fl oz",
